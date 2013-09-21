@@ -67,6 +67,11 @@ require 'phar://me.phar/src/{$app_name}.php';
 __HALT_COMPILER();
 STUB;
 
+    $dir_name = dirname($filename);
+    if (!file_exists($dir_name)) {
+        mkdir($dir_name, 0755, $src_dir);
+    }
+
     $phar = new Phar($filename);
     $phar->buildFromDirectory($src_dir);
     $phar->setStub($stub);
