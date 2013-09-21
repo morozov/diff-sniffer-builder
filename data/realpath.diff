@@ -1,0 +1,85 @@
+diff --git CodeSniffer.php CodeSniffer.php
+index cf0eb9c..2d5decb 100644
+--- CodeSniffer.php
++++ CodeSniffer.php
+@@ -227,8 +227,6 @@ class PHP_CodeSniffer
+             define('PHPCS_CWD', getcwd());
+         }
+ 
+-        chdir(dirname(__FILE__).'/CodeSniffer/');
+-
+         // Set default CLI object in case someone is running us
+         // without using the command line script.
+         $this->cli = new PHP_CodeSniffer_CLI();
+@@ -445,8 +443,8 @@ class PHP_CodeSniffer
+                 if ($ruleset !== false) {
+                     $standardName = (string) $ruleset['name'];
+                 }
+-            } else if (is_file(realpath(PHPCS_CWD.'/'.$standard)) === true) {
+-                $ruleset = simplexml_load_file(realpath(PHPCS_CWD.'/'.$standard));
++            } else if (is_file(PHPCS_CWD.'/'.$standard) === true) {
++                $ruleset = simplexml_load_file(PHPCS_CWD.'/'.$standard);
+                 if ($ruleset !== false) {
+                     $standardName = (string) $ruleset['name'];
+                 }
+@@ -624,11 +622,11 @@ class PHP_CodeSniffer
+ 
+             $standard = (string) $ruleset['name'];
+         } else {
+-            self::$standardDir = realpath(dirname(__FILE__).'/CodeSniffer/Standards/'.$standard);
++            self::$standardDir = dirname(__FILE__).'/CodeSniffer/Standards/'.$standard;
+             if (is_dir(self::$standardDir) === false) {
+                 // This isn't looking good. Let's see if this
+                 // is a relative path to a custom standard.
+-                $path = realpath(PHPCS_CWD.'/'.$standard);
++                $path = PHPCS_CWD.'/'.$standard;
+                 if (is_dir($path) === true) {
+                     // This is a relative path to a custom standard.
+                     self::$standardDir = $path;
+@@ -795,7 +793,7 @@ class PHP_CodeSniffer
+             if (in_array($sniff, $excludedSniffs) === true) {
+                 continue;
+             } else {
+-                $files[] = realpath($sniff);
++                $files[] = $sniff;
+             }
+         }
+ 
+@@ -847,7 +845,7 @@ class PHP_CodeSniffer
+             $sniff = basename($path);
+         } else if (is_file($sniff) === false) {
+             // See if this is a whole standard being referenced.
+-            $path = realpath(dirname(__FILE__).'/CodeSniffer/Standards/'.$sniff);
++            $path = dirname(__FILE__).'/CodeSniffer/Standards/'.$sniff;
+             if (is_dir($path) === true) {
+                 $isDir = true;
+             } else {
+@@ -859,13 +857,13 @@ class PHP_CodeSniffer
+                 }
+ 
+                 $path = $parts[0].'/Sniffs/'.$parts[1].'/'.$parts[2].'Sniff.php';
+-                $path = realpath(dirname(__FILE__).'/CodeSniffer/Standards/'.$path);
++                $path = dirname(__FILE__).'/CodeSniffer/Standards/'.$path;
+                 if ($path === false && self::$standardDir !== '') {
+                     // The sniff is not locally installed, so check if it is being
+                     // referenced as a remote sniff outside the install. We do this by
+                     // looking directly in the passed standard dir to see if it is
+                     // installed in there.
+-                    $path = realpath(self::$standardDir.'/Sniffs/'.$parts[1].'/'.$parts[2].'Sniff.php');
++                    $path = self::$standardDir.'/Sniffs/'.$parts[1].'/'.$parts[2].'Sniff.php';
+                 }
+             }
+         }//end if
+diff --git CodeSniffer/DocGenerators/Generator.php CodeSniffer/DocGenerators/Generator.php
+index 993dafa..be6849d 100644
+--- CodeSniffer/DocGenerators/Generator.php
++++ CodeSniffer/DocGenerators/Generator.php
+@@ -137,7 +137,7 @@ class PHP_CodeSniffer_DocGenerators_Generator
+             $standard    = basename($this->_standard);
+         } else {
+             $standardDir
+-                = realpath(dirname(__FILE__).'/../Standards/'.$this->_standard);
++                = dirname(__FILE__).'/../Standards/'.$this->_standard;
+ 
+             $standard = $this->_standard;
+         }
