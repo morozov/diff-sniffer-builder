@@ -63,7 +63,8 @@ function create_phar($app_name, $src_dir, $filename)
 <?php
 
 Phar::mapPhar('me.phar');
-require 'phar://me.phar/src/{$app_name}.php';
+\$exit_code = require 'phar://me.phar/src/{$app_name}.php';
+exit(\$exit_code);
 __HALT_COMPILER();
 STUB;
 
