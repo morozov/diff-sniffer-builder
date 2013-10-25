@@ -16,18 +16,17 @@ require __DIR__ . '/bootstrap.php';
 require __DIR__ . '/builder/functions.php';
 
 if ($_SERVER['argc'] < 3) {
-    fwrite(STDERR, 'Usage: ' . basename($_SERVER['argv'][0])
-        . ' app-name src-dir <output>' . PHP_EOL);
+    fwrite(
+        STDERR,
+        'Usage: ' . basename($_SERVER['argv'][0])
+        . ' app-name src-dir <-c /path/to/config.php> <output>' . PHP_EOL
+    );
     exit(1);
 }
 
-$app_name = $_SERVER['argv'][1];
-$src_dir = $_SERVER['argv'][2];
-if (isset($_SERVER['argv'][3])) {
-    $output = $_SERVER['argv'][3];
-} else {
-    $output = $app_name . '.phar';
-}
+$app_name = $src_dir = $output = $config = null;
+$params = builder\parse_args($_SERVER['argv']);
+extract($params, EXTR_IF_EXISTS);
 
 // use "git diff --no-prefix" in order to create proper diff
 $diff_path = __DIR__ . '/../data/realpath.diff';
@@ -40,4 +39,4 @@ register_shutdown_function(function () use ($phpcs_src_dir, $diff_path) {
     builder\patch($phpcs_src_dir, $diff_path, true);
 });
 
-builder\create_phar($app_name, $src_dir, $output);
+builder\create_phar($app_name, $src_dir, $output, $config);

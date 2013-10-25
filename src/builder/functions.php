@@ -55,8 +55,9 @@ function patch($src_dir, $diff_path, $reverse)
  * @param string $app_name Application name
  * @param string $src_dir  Source directory
  * @param string $filename Output filename
+ * @param string $config   Path to config file
  */
-function create_phar($app_name, $src_dir, $filename)
+function create_phar($app_name, $src_dir, $filename, $config = null)
 {
     $stub = <<<STUB
 #!/usr/bin/env php
@@ -77,5 +78,39 @@ STUB;
     $phar->buildFromDirectory($src_dir);
     $phar->setStub($stub);
 
+    if ($config) {
+        $phar->addFile($config, 'config.php');
+    }
+
     chmod($filename, 0755);
+}
+
+/**
+ * Parses command line arguments
+ *
+ * @param array $args Command line arguments
+ *
+ * @return array Application parameters
+ */
+function parse_args(array $args)
+{
+    array_shift($args);
+    $app_name = array_shift($args);
+    $src_dir = array_shift($args);
+    $output = null;
+    $config = null;
+
+    while (($arg = array_shift($args)) && ($output === null || $config === null)) {
+        if (strpos($arg, '-c') === 0) {
+            $config = array_shift($args);
+        } else {
+            $output = $arg;
+        }
+    }
+
+    if ($output == null) {
+        $output = $app_name . '.phar';
+    }
+
+    return compact('app_name', 'src_dir', 'output', 'config');
 }
