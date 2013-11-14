@@ -31,6 +31,7 @@ function patch($src_dir, $diff_path, $reverse)
     $cmd = array(
         'patch',
         '-p0',
+        '-s',
         '-d',
         escapeshellarg($src_dir),
         '-i',
