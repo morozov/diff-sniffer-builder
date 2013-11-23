@@ -56,34 +56,118 @@ function patch($src_dir, $diff_path, $reverse)
  * @param string $app_name Application name
  * @param string $src_dir  Source directory
  * @param string $filename Output filename
- * @param string $config   Path to config file
+ * @param string $standard Path to standard
  */
-function create_phar($app_name, $src_dir, $filename, $config = null)
+function create_phar($app_name, $src_dir, $filename, $standard = null)
 {
-    $stub = <<<STUB
-#!/usr/bin/env php
-<?php
-
-Phar::mapPhar('me.phar');
-\$exit_code = require 'phar://me.phar/src/{$app_name}.php';
-exit(\$exit_code);
-__HALT_COMPILER();
-STUB;
-
     $dir_name = dirname($filename);
     if (!file_exists($dir_name)) {
         mkdir($dir_name, 0755, $src_dir);
     }
 
+    if (file_exists($filename)) {
+        unlink($filename);
+    }
+
     $phar = new Phar($filename);
     $phar->buildFromDirectory($src_dir);
+
+    $stub = get_stub($app_name);
     $phar->setStub($stub);
 
-    if ($config) {
-        $phar->addFile($config, 'config.php');
+    if ($standard) {
+        if (is_custom_standard($standard)) {
+            $path = copy_standard($phar, $standard);
+            $value = '\' . __DIR__ . \'/' . $path;
+        } else {
+            $value = $standard;
+        }
+
+        $config = get_config($value);
+        $phar->addFromString('config.php', $config);
     }
 
     chmod($filename, 0755);
+}
+
+/**
+ * Determines whether the given standars is custom
+ *
+ * @param string $standard Standard name or path
+ *
+ * @return bool
+ */
+function is_custom_standard($standard)
+{
+    $rule_set = $standard . '/ruleset.xml';
+
+    return file_exists($rule_set);
+}
+
+/**
+ * Copies custom standard into archive
+ *
+ * @param Phar   $phar     Archive
+ * @param string $standard Path to source standard directory
+ *
+ * @return string          Path to standard directory in archive
+ */
+function copy_standard(Phar $phar, $standard)
+{
+    $base_name = basename($standard);
+    $path = 'standards/' . $base_name;
+
+    $iterator = new \RecursiveIteratorIterator(
+        new \RecursiveDirectoryIterator($standard)
+    );
+
+    /** @var \SplFileInfo $fileInfo */
+    foreach ($iterator as $fileInfo) {
+        if ($fileInfo->isFile()) {
+            $localName = $path . '/' . $iterator->getSubPathName();
+            $phar->addFile((string) $fileInfo, $localName);
+        }
+    }
+
+    return $path;
+}
+
+/**
+ * Returns the contents for archive stub
+ *
+ * @param string $app_name Application name
+ *
+ * @return string          Stub contents
+ */
+function get_stub($app_name)
+{
+    return <<<STUB
+#!/usr/bin/env php
+<?php
+
+Phar::mapPhar('me.phar');
+\$exit_code = require 'phar://me.phar/src/$app_name.php';
+exit(\$exit_code);
+__HALT_COMPILER();
+STUB;
+}
+
+/**
+ * Returns the contents of application config
+ *
+ * @param string $standard The value of --standard option of PHP_CodeSniffer
+ *
+ * @return string          Config contents
+ */
+function get_config($standard)
+{
+    return <<<CFG
+<?php
+
+return array(
+    '--standard=$standard',
+);
+CFG;
 }
 
 /**
@@ -99,11 +183,12 @@ function parse_args(array $args)
     $app_name = array_shift($args);
     $src_dir = array_shift($args);
     $output = null;
-    $config = null;
+    $standard = null;
 
-    while (($arg = array_shift($args)) && ($output === null || $config === null)) {
-        if (strpos($arg, '-c') === 0) {
-            $config = array_shift($args);
+    while (($arg = array_shift($args))
+        && ($output === null || $standard === null)) {
+        if (strpos($arg, '-s') === 0) {
+            $standard = array_shift($args);
         } else {
             $output = $arg;
         }
@@ -113,5 +198,5 @@ function parse_args(array $args)
         $output = $app_name . '.phar';
     }
 
-    return compact('app_name', 'src_dir', 'output', 'config');
+    return compact('app_name', 'src_dir', 'output', 'standard');
 }

@@ -19,12 +19,12 @@ if ($_SERVER['argc'] < 3) {
     fwrite(
         STDERR,
         'Usage: ' . basename($_SERVER['argv'][0])
-        . ' app-name src-dir <-c /path/to/config.php> <output>' . PHP_EOL
+        . ' app-name src-dir <-s /path/to/standard> <output>' . PHP_EOL
     );
     exit(1);
 }
 
-$app_name = $src_dir = $output = $config = null;
+$app_name = $src_dir = $output = $standard = null;
 $params = builder\parse_args($_SERVER['argv']);
 extract($params, EXTR_IF_EXISTS);
 
@@ -39,4 +39,4 @@ register_shutdown_function(function () use ($phpcs_src_dir, $diff_path) {
     builder\patch($phpcs_src_dir, $diff_path, true);
 });
 
-builder\create_phar($app_name, $src_dir, $output, $config);
+builder\create_phar($app_name, $src_dir, $output, $standard);
