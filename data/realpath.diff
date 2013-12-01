@@ -1,8 +1,8 @@
 diff --git CodeSniffer.php CodeSniffer.php
-index cf0eb9c..2d5decb 100644
+index 28d5290..8bd3b9b 100644
 --- CodeSniffer.php
 +++ CodeSniffer.php
-@@ -227,8 +227,6 @@ class PHP_CodeSniffer
+@@ -242,8 +242,6 @@ class PHP_CodeSniffer
              define('PHPCS_CWD', getcwd());
          }
  
@@ -11,7 +11,7 @@ index cf0eb9c..2d5decb 100644
          // Set default CLI object in case someone is running us
          // without using the command line script.
          $this->cli = new PHP_CodeSniffer_CLI();
-@@ -445,8 +443,8 @@ class PHP_CodeSniffer
+@@ -460,8 +458,8 @@ class PHP_CodeSniffer
                  if ($ruleset !== false) {
                      $standardName = (string) $ruleset['name'];
                  }
@@ -22,7 +22,7 @@ index cf0eb9c..2d5decb 100644
                  if ($ruleset !== false) {
                      $standardName = (string) $ruleset['name'];
                  }
-@@ -624,11 +622,11 @@ class PHP_CodeSniffer
+@@ -639,11 +637,11 @@ class PHP_CodeSniffer
  
              $standard = (string) $ruleset['name'];
          } else {
@@ -36,7 +36,7 @@ index cf0eb9c..2d5decb 100644
                  if (is_dir($path) === true) {
                      // This is a relative path to a custom standard.
                      self::$standardDir = $path;
-@@ -795,7 +793,7 @@ class PHP_CodeSniffer
+@@ -810,7 +808,7 @@ class PHP_CodeSniffer
              if (in_array($sniff, $excludedSniffs) === true) {
                  continue;
              } else {
@@ -45,7 +45,7 @@ index cf0eb9c..2d5decb 100644
              }
          }
  
-@@ -847,7 +845,7 @@ class PHP_CodeSniffer
+@@ -862,7 +860,7 @@ class PHP_CodeSniffer
              $sniff = basename($path);
          } else if (is_file($sniff) === false) {
              // See if this is a whole standard being referenced.
@@ -54,13 +54,14 @@ index cf0eb9c..2d5decb 100644
              if (is_dir($path) === true) {
                  $isDir = true;
              } else {
-@@ -859,13 +857,13 @@ class PHP_CodeSniffer
+@@ -874,13 +872,13 @@ class PHP_CodeSniffer
                  }
  
                  $path = $parts[0].'/Sniffs/'.$parts[1].'/'.$parts[2].'Sniff.php';
 -                $path = realpath(dirname(__FILE__).'/CodeSniffer/Standards/'.$path);
+-                if ($path === false && self::$standardDir !== '') {
 +                $path = dirname(__FILE__).'/CodeSniffer/Standards/'.$path;
-                 if ($path === false && self::$standardDir !== '') {
++                if (file_exists($path) === false && self::$standardDir !== '') {
                      // The sniff is not locally installed, so check if it is being
                      // referenced as a remote sniff outside the install. We do this by
                      // looking directly in the passed standard dir to see if it is
