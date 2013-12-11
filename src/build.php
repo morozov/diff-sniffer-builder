@@ -14,6 +14,7 @@
  */
 require __DIR__ . '/bootstrap.php';
 require __DIR__ . '/builder/functions.php';
+require __DIR__ . '/builder/BlackListFilter.php';
 
 if ($_SERVER['argc'] < 3) {
     fwrite(

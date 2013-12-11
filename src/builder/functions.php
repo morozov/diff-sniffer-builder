@@ -69,8 +69,21 @@ function create_phar($app_name, $src_dir, $filename, $standard = null)
         unlink($filename);
     }
 
+    $rdi = new \RecursiveDirectoryIterator(
+        $src_dir,
+        \FilesystemIterator::SKIP_DOTS | \FilesystemIterator::UNIX_PATHS
+    );
+
+    $filter = new BlackListFilter($rdi, array(
+        '.gitignore',
+        '.git',
+        '.idea',
+    ));
+
+    $rii = new \RecursiveIteratorIterator($filter);
+
     $phar = new Phar($filename);
-    $phar->buildFromDirectory($src_dir);
+    $phar->buildFromIterator($rii, $src_dir);
 
     $stub = get_stub($app_name);
     $phar->setStub($stub);
