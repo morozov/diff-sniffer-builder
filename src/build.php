@@ -29,15 +29,4 @@ $app_name = $src_dir = $output = $standard = null;
 $params = builder\parse_args($_SERVER['argv']);
 extract($params, EXTR_IF_EXISTS);
 
-// use "git diff --no-prefix" in order to create proper diff
-$diff_path = __DIR__ . '/../data/realpath.diff';
-
-$phpcs_src_dir = $src_dir . '/vendor/squizlabs/php_codesniffer';
-
-builder\patch($phpcs_src_dir, $diff_path, false);
-
-register_shutdown_function(function () use ($phpcs_src_dir, $diff_path) {
-    builder\patch($phpcs_src_dir, $diff_path, true);
-});
-
 builder\create_phar($app_name, $src_dir, $output, $standard);
