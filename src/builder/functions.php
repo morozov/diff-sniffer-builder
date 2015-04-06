@@ -15,40 +15,8 @@
 namespace builder;
 
 use Phar;
-use RuntimeException;
 
-/**
- * Patches PHP_CodeSniffer source files
- *
- * @param string $src_dir   Source directory
- * @param string $diff_path Path to diff file
- * @param boolean $reverse  Reverse patch
- *
- * @throws \RuntimeException
- */
-function patch($src_dir, $diff_path, $reverse)
-{
-    $cmd = array(
-        'patch',
-        '-p0',
-        '-s',
-        '-d',
-        escapeshellarg($src_dir),
-        '-i',
-        escapeshellarg($diff_path),
-    );
-    
-    if ($reverse) {
-        $cmd[] = '-R';
-    }
-
-    $cmd = implode(' ', $cmd);
-    passthru($cmd, $return_var);
-
-    if ($return_var != 0) {
-        throw new RuntimeException('Unable to patch the library');
-    }
-}
+const PHAR_ALIAS = 'me.phar';
 
 /**
  * Creates application phar archive
@@ -56,9 +24,9 @@ function patch($src_dir, $diff_path, $reverse)
  * @param string $app_name Application name
  * @param string $src_dir  Source directory
  * @param string $filename Output filename
- * @param string $standard Path to standard
+ * @param array $config Default package configuration
  */
-function create_phar($app_name, $src_dir, $filename, $standard = null)
+function create_phar($app_name, $src_dir, $filename, array $config = array())
 {
     $dir_name = dirname($filename);
     if (!file_exists($dir_name)) {
@@ -88,16 +56,16 @@ function create_phar($app_name, $src_dir, $filename, $standard = null)
     $stub = get_stub($app_name);
     $phar->setStub($stub);
 
-    if ($standard) {
-        if (is_custom_standard($standard)) {
-            $path = copy_standard($phar, $standard);
-            $value = '\' . __DIR__ . \'/' . $path;
-        } else {
-            $value = $standard;
+    if (isset($config['default_standard'])) {
+        if (is_custom_standard($config['default_standard'])) {
+            $path = copy_standard($phar, $config['default_standard']);
+            $config['default_standard'] = 'phar://' . PHAR_ALIAS . '/' . $path;
         }
+    }
 
-        $config = get_config($value);
-        $phar->addFromString('config.php', $config);
+    if ($config) {
+        $code = get_config_contents($config);
+        $phar->addFromString('vendor/squizlabs/php_codesniffer/CodeSniffer.conf', $code);
     }
 
     chmod($filename, 0755);
@@ -130,6 +98,7 @@ function copy_standard(Phar $phar, $standard)
     $base_name = basename($standard);
     $path = 'standards/' . $base_name;
 
+    /** @var \RecursiveDirectoryIterator $iterator */
     $iterator = new \RecursiveIteratorIterator(
         new \RecursiveDirectoryIterator($standard)
     );
@@ -154,12 +123,13 @@ function copy_standard(Phar $phar, $standard)
  */
 function get_stub($app_name)
 {
+    $alias = PHAR_ALIAS;
     return <<<STUB
 #!/usr/bin/env php
 <?php
 
-Phar::mapPhar('me.phar');
-\$exit_code = require 'phar://me.phar/src/$app_name.php';
+Phar::mapPhar('$alias');
+\$exit_code = require 'phar://$alias/src/$app_name.php';
 exit(\$exit_code);
 __HALT_COMPILER();
 STUB;
@@ -168,18 +138,17 @@ STUB;
 /**
  * Returns the contents of application config
  *
- * @param string $standard The value of --standard option of PHP_CodeSniffer
+ * @param string $config The value of --standard option of PHP_CodeSniffer
  *
  * @return string          Config contents
  */
-function get_config($standard)
+function get_config_contents($config)
 {
+    $code = var_export($config, true);
     return <<<CFG
 <?php
 
-return array(
-    '--standard=$standard',
-);
+\$phpCodeSnifferConfig = $code;
 CFG;
 }
 

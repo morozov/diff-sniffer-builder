@@ -29,4 +29,9 @@ $app_name = $src_dir = $output = $standard = null;
 $params = builder\parse_args($_SERVER['argv']);
 extract($params, EXTR_IF_EXISTS);
 
-builder\create_phar($app_name, $src_dir, $output, $standard);
+$config = array();
+if ($standard) {
+    $config['default_standard'] = $standard;
+}
+
+builder\create_phar($app_name, $src_dir, $output, $config);
