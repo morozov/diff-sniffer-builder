@@ -16,8 +16,6 @@ namespace builder;
 
 use Phar;
 
-const PHAR_ALIAS = 'me.phar';
-
 /**
  * Creates application phar archive
  *
@@ -53,13 +51,13 @@ function create_phar($app_name, $src_dir, $filename, array $config = array())
     $phar = new Phar($filename);
     $phar->buildFromIterator($rii, $src_dir);
 
-    $stub = get_stub($app_name);
+    $stub = get_stub($src_dir, $app_name);
     $phar->setStub($stub);
 
     if (isset($config['default_standard'])) {
         if (is_custom_standard($config['default_standard'])) {
             $path = copy_standard($phar, $config['default_standard']);
-            $config['default_standard'] = 'phar://' . PHAR_ALIAS . '/' . $path;
+            $config['default_standard'] = 'phar://' . $app_name . '.phar/' . $path;
         }
     }
 
@@ -117,22 +115,35 @@ function copy_standard(Phar $phar, $standard)
 /**
  * Returns the contents for archive stub
  *
+ * @param string $src_dir  Source directory
  * @param string $app_name Application name
  *
  * @return string          Stub contents
  */
-function get_stub($app_name)
+function get_stub($src_dir, $app_name)
 {
-    $alias = PHAR_ALIAS;
-    return <<<STUB
-#!/usr/bin/env php
-<?php
+    $bin = $src_dir . '/bin/' .  $app_name;
+    $contents = file_get_contents($bin);
 
-Phar::mapPhar('$alias');
-\$exit_code = require 'phar://$alias/src/$app_name.php';
-exit(\$exit_code);
+    $contents = str_replace(<<<PHP
+require __DIR__ . '/../include/bootstrap.php';
+PHP
+        ,
+        <<<PHP
+Phar::mapPhar('$app_name.phar');
+require __DIR__ . '/../include/bootstrap.php';
+PHP
+        ,
+        $contents
+    );
+
+    return str_replace("__DIR__ . '/../", "'phar://$app_name.phar/", $contents)
+        . <<<PHP
+
 __HALT_COMPILER();
-STUB;
+
+PHP
+    ;
 }
 
 /**
