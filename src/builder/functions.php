@@ -89,7 +89,7 @@ function create_phar($app_name, $src_dir, $filename, array $config = array())
     $phar->setStub($stub);
 
     if (isset($config['default_standard'])) {
-        if (is_custom_standard($config['default_standard'])) {
+        if (is_external_standard($config['default_standard'])) {
             $path = copy_standard($phar, $config['default_standard']);
             $config['default_standard'] = 'phar://' . $app_name . '.phar/' . $path;
         }
@@ -104,17 +104,15 @@ function create_phar($app_name, $src_dir, $filename, array $config = array())
 }
 
 /**
- * Determines whether the given standars is custom
+ * Determines whether the given standard is external
  *
  * @param string $standard Standard name or path
  *
  * @return bool
  */
-function is_custom_standard($standard)
+function is_external_standard($standard)
 {
-    $rule_set = $standard . '/ruleset.xml';
-
-    return file_exists($rule_set);
+    return strpbrk ($standard, '\\/') !== false;
 }
 
 /**
