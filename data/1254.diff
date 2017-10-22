@@ -1,0 +1,50 @@
+diff --git src/Config.php src/Config.php
+index 266e443a2..d8088928f 100644
+--- src/Config.php
++++ src/Config.php
+@@ -1602,23 +1602,34 @@ public static function getAllConfigData()
+             return self::$configData;
+         }
+
+-        $path = '';
++        $paths  = array();
++        $isPhar = false;
++
+         if (is_callable('\Phar::running') === true) {
+-            $path = \Phar::running(false);
++            $phar = \Phar::running(false);
++
++            if ($phar !== '') {
++                $isPhar  = true;
++                $paths[] = dirname($phar).'/CodeSniffer.conf';
++            }
+         }
+
+-        if ($path !== '') {
+-            $configFile = dirname($path).'/CodeSniffer.conf';
+-        } else {
+-            $configFile = dirname(__DIR__).'/CodeSniffer.conf';
+-            if (is_file($configFile) === false
+-                && strpos('@data_dir@', '@data_dir') === false
+-            ) {
+-                $configFile = '@data_dir@/PHP_CodeSniffer/CodeSniffer.conf';
++        $paths[] = dirname(__DIR__).'/CodeSniffer.conf';
++
++        if ($isPhar === false) {
++            $paths[] = '@data_dir@/PHP_CodeSniffer/CodeSniffer.conf';
++        }
++
++        $configFile = null;
++
++        foreach ($paths as $path) {
++            if (is_file($path) === true) {
++                $configFile = $path;
++                break;
+             }
+         }
+
+-        if (is_file($configFile) === false) {
++        if ($configFile === null) {
+             self::$configData = array();
+             return array();
+         }

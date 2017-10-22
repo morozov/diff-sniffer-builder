@@ -15,6 +15,40 @@
 namespace builder;
 
 use Phar;
+use RuntimeException;
+
+/**
+ * Patches PHP_CodeSniffer source files
+ *
+ * @param string $src_dir   Source directory
+ * @param string $diff_path Path to diff file
+ * @param boolean $reverse  Reverse patch
+ *
+ * @throws RuntimeException
+ */
+function patch($src_dir, $diff_path, $reverse)
+{
+    $cmd = array(
+        'patch',
+        '-p0',
+        '-s',
+        '-d',
+        escapeshellarg($src_dir),
+        '-i',
+        escapeshellarg($diff_path),
+    );
+
+    if ($reverse) {
+        $cmd[] = '-R';
+    }
+
+    $cmd = implode(' ', $cmd);
+    passthru($cmd, $return_var);
+
+    if ($return_var != 0) {
+        throw new RuntimeException('Unable to patch the library');
+    }
+}
 
 /**
  * Creates application phar archive
