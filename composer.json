@@ -1,0 +1,20 @@
+{
+  "name": "morozov/diff-sniffer-builder",
+  "description": "Builder for diff-sniffer-based applications",
+  "require": {
+    "morozov/bootstrap": "^1.1"
+  },
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Sergei Morozov",
+      "email": "morozov@tut.by"
+    }
+  ],
+  "autoload": {
+    "files": [
+      "src/builder/functions.php",
+      "src/builder/BlackListFilter.php"
+    ]
+  }
+}

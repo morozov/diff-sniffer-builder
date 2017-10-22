@@ -12,9 +12,6 @@
  * @license   http://mit-license.org/ MIT Licence
  * @link      http://github.com/morozov/diff-sniffer-builder
  */
-require __DIR__ . '/bootstrap.php';
-require __DIR__ . '/builder/functions.php';
-require __DIR__ . '/builder/BlackListFilter.php';
 
 if ($_SERVER['argc'] < 3) {
     fwrite(
@@ -24,6 +21,8 @@ if ($_SERVER['argc'] < 3) {
     );
     exit(1);
 }
+
+require __DIR__ . '/../vendor/autoload.php';
 
 $app_name = $src_dir = $output = $standard = null;
 $params = builder\parse_args($_SERVER['argv']);
