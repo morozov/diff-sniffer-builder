@@ -75,9 +75,20 @@ function create_phar($app_name, $src_dir, $filename, array $config = array())
     );
 
     $filter = new BlackListFilter($rdi, array(
+        '.gitattributes',
         '.gitignore',
         '.git',
         '.idea',
+        '.scrutinizer.yml',
+        '.travis.yml',
+        'Makefile',
+        'README.md',
+        'bin',
+        'composer.json',
+        'composer.lock',
+        'etc/config.php',
+        'phpunit.xml',
+        'tests',
     ));
 
     $rii = new \RecursiveIteratorIterator($filter);
