@@ -192,9 +192,9 @@ PHP
 /**
  * Returns the contents of application config
  *
- * @param string $config The value of --standard option of PHP_CodeSniffer
+ * @param array $config PHP_CodeSniffer configuration
  *
- * @return string          Config contents
+ * @return string       Config contents
  */
 function get_config_contents($config)
 {
