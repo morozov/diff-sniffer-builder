@@ -62,7 +62,7 @@ function create_phar($app_name, $src_dir, $filename, array $config = array())
 {
     $dir_name = dirname($filename);
     if (!file_exists($dir_name)) {
-        mkdir($dir_name, 0755, $src_dir);
+        mkdir($dir_name, 0755, true);
     }
 
     if (file_exists($filename)) {
