@@ -123,7 +123,7 @@ function create_phar($app_name, $src_dir, $filename, array $config = array())
  */
 function is_external_standard($standard)
 {
-    return strpbrk ($standard, '\\/') !== false;
+    return strpbrk($standard, '\\/') !== false;
 }
 
 /**
@@ -168,7 +168,8 @@ function get_stub($src_dir, $app_name)
     $bin = $src_dir . '/bin/' .  $app_name;
     $contents = file_get_contents($bin);
 
-    $contents = str_replace(<<<PHP
+    $contents = str_replace(
+        <<<PHP
 require __DIR__ . '/../include/bootstrap.php';
 PHP
         ,
