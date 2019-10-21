@@ -75,18 +75,24 @@ function create_phar($app_name, $src_dir, $filename, array $config = array())
     );
 
     $filter = new BlackListFilter($rdi, array(
+        '.appveyor.yml',
         '.gitattributes',
         '.gitignore',
         '.git',
         '.idea',
+        '.phpcs.cache',
+        '.phpunit.result.cache',
         '.scrutinizer.yml',
         '.travis.yml',
+        'CHANGELOG.md',
         'Makefile',
         'README.md',
         'bin',
         'composer.json',
         'composer.lock',
         'etc/config.php',
+        'phpcs.xml',
+        'phpstan.neon',
         'phpunit.xml',
         'tests',
     ));
